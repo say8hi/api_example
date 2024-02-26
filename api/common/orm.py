@@ -1,4 +1,7 @@
+import logging
 from sqlalchemy import select, delete, update
+
+from api.common.schemas import UserBaseDTO
 
 from .models import User
 from .database import async_session_factory
@@ -9,25 +12,32 @@ class AsyncORM:
     session_factory = async_session_factory
     
     @classmethod
-    async def insert_user(cls, username: str, full_name: str) -> User:
+    async def insert_user(cls, user_data: UserBaseDTO) -> None:
         async with cls.session_factory() as session:
-            user = User(username=username, full_name=full_name)
+            
+            user = User(**user_data.model_dump())
             session.add(user)
 
             await session.flush()
             await session.commit()
-            return user
+            # TODO: Return user_id
 
     @classmethod
-    async def select_user(cls, user_id: int, get_all: bool = False) -> User | list[User]:
+    async def select_user(cls, user_id: int = None) -> User:
         async with cls.session_factory() as session:
-            query = select(User)
-            if not get_all:
-                query = query.where(User.id == user_id) 
+            query = select(User).where(User.id == user_id) 
 
             result = await session.execute(query)
-            workers = result.scalars().all()
-            return workers[0] if len(workers) == 1 else workers
+            user = result.scalars().first()
+            return user
+    
+    @classmethod
+    async def select_all_users(cls) -> list[User]:
+        async with cls.session_factory() as session:
+            query = select(User)
+            result = await session.execute(query)
+            users = result.scalars().all()
+            return users
 
     @classmethod
     async def update_user(cls, user_id: int, **kwargs) -> User:

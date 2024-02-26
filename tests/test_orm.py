@@ -5,6 +5,8 @@ from api.common.orm import AsyncORM
 from api.common.database import init_db
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, async_scoped_session
 
+from api.common.schemas import UserBaseDTO
+
 
 def orm_test_decorator(func):
 
@@ -16,7 +18,7 @@ def orm_test_decorator(func):
             except RuntimeError:
                 return None
             
-        async_engine_test = create_async_engine("sqlite+aiosqlite:///:memory:")
+        async_engine_test = create_async_engine("sqlite+aiosqlite:///:memory:")  # TODO: replace test sqlite with postgresql
         async_session_factory_test = async_scoped_session(
             async_sessionmaker(async_engine_test, expire_on_commit=False),
             scopefunc=get_current_task
@@ -36,40 +38,30 @@ def orm_test_decorator(func):
 @pytest.mark.asyncio
 @orm_test_decorator
 async def test_insert_user():
-    user = await AsyncORM.insert_user("testuser", "Test User")
+    user_id = await AsyncORM.insert_user(UserBaseDTO(username="testuser", full_name="Test User"))
+
+    user = await AsyncORM.select_user(user_id)
 
     assert user is not None
-    assert user.id == user.id
+    assert user.id == user_id
     assert user.username == "testuser"
     assert user.full_name == "Test User"
 
-
-@pytest.mark.asyncio
-@orm_test_decorator
-async def test_select_user():
-    user = await AsyncORM.insert_user("testuser", "Test User")
-
-    user_from_db = await AsyncORM.select_user(user.id)
-
-    assert user_from_db is not None
-    assert user_from_db.id == user.id
-    assert user_from_db.username == "testuser"
-    assert user_from_db.full_name == "Test User"
 
 
 @pytest.mark.asyncio
 @orm_test_decorator
 async def test_update_user():
-    user = await AsyncORM.insert_user("testuser", "Test User")
+    user_id = await AsyncORM.insert_user(UserBaseDTO(username="testuser", full_name="Test User"))
 
     user_from_db = await AsyncORM.update_user(
-        user.id,
+        user_id,
         username="new_test_username",
         full_name="new_test_full_name"
     )
 
     assert user_from_db is not None
-    assert user_from_db.id == user.id
+    assert user_from_db.id == user_id
     assert user_from_db.username == "new_test_username"
     assert user_from_db.full_name == "new_test_full_name"
 
@@ -77,10 +69,10 @@ async def test_update_user():
 @pytest.mark.asyncio
 @orm_test_decorator
 async def test_delete_user():
-    user = await AsyncORM.insert_user("testuser", "Test User")
+    user_id = await AsyncORM.insert_user(UserBaseDTO(username="testuser", full_name="Test User"))
 
-    await AsyncORM.delete_user(user.id)
+    await AsyncORM.delete_user(user_id)
 
-    user_from_db = await AsyncORM.select_user(user.id)
+    user_from_db = await AsyncORM.select_user(user_id)
 
     assert not user_from_db
