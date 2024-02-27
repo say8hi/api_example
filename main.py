@@ -1,5 +1,3 @@
-import asyncio
-import os
 import sys
 
 
@@ -13,9 +11,9 @@ api_name = sys.argv[1]
 if api_name == "rest":
     from api.rest.api import app as rest_app
     app = rest_app
-# elif api_name == "graphql":
-#     from api.graphql.api import app as graphql_app
-#     app = graphql_app
+elif api_name == "graphql":
+    from api.graphql.api import app as graphql_app
+    app = graphql_app
 # elif api_name == "grpc":
 #     from api.grpc.api import start_grpc_server
 #     start_grpc_server()

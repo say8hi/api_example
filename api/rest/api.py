@@ -39,7 +39,7 @@ async def update_user(user_id: int, user_data: UserUpdateDTO):
     user = await AsyncORM.select_user(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    user = await AsyncORM.update_user(user_id, username=user_data.username, full_name=user_data.full_name)
+    user = await AsyncORM.update_user(user_id, **user_data.model_dump)
     return user
 
 
@@ -49,7 +49,7 @@ async def delete_user(user_id: int):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     await AsyncORM.delete_user(user_id)
-    return StatusResponse(status="ok")
+    return StatusResponse(status="ok", data=f"User {user_id} was deleted")
 
 
 app.include_router(user_router)

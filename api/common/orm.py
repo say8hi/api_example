@@ -1,4 +1,3 @@
-import logging
 from sqlalchemy import select, delete, update
 
 from api.common.schemas import UserBaseDTO
@@ -20,6 +19,8 @@ class AsyncORM:
 
             await session.flush()
             await session.commit()
+
+            # return user.id
             # TODO: Return user_id
 
     @classmethod

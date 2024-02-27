@@ -22,9 +22,6 @@ class UserInDBBaseDTO(UserBaseDTO):
     id: int
     registered_at: datetime
 
-    # class Config:
-    #     orm_mode=True
-
 
 class UserDTO(UserInDBBaseDTO):
     pass

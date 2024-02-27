@@ -1,6 +1,6 @@
 import datetime
-from typing import Annotated, Optional
-from sqlalchemy import DateTime, func, text
+from typing import Annotated
+from sqlalchemy import text
 from sqlalchemy.orm import Mapped, mapped_column
 from .database import Base
 
